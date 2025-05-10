@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
+import axios from 'axios';
 
 interface Food {
   id: string;
@@ -23,6 +25,7 @@ const FoodSearchbar = ({ onFoodSelect }: FoodSearchbarProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<Food[]>([]);
   const [isResultsVisible, setIsResultsVisible] = useState(false);
+  const { apiKey } = useAuth();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,54 +35,31 @@ const FoodSearchbar = ({ onFoodSelect }: FoodSearchbarProps) => {
       return;
     }
     
+    if (!apiKey) {
+      toast.error('You need an API key to search for food items');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      // Simulated API call - in a real app, this would call your backend
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Mock data
-      const mockResults: Food[] = [
-        {
-          id: '1',
-          name: 'Apple',
-          calories: 52,
-          serving_size_g: 100,
-          fat_g: 0.2,
-          carbs_g: 14,
-          protein_g: 0.3
-        },
-        {
-          id: '2',
-          name: 'Apple, Fuji',
-          calories: 63,
-          serving_size_g: 100,
-          fat_g: 0.2,
-          carbs_g: 15.3,
-          protein_g: 0.3
-        },
-        {
-          id: '3',
-          name: 'Apple Juice',
-          calories: 46,
-          serving_size_g: 100,
-          fat_g: 0.1,
-          carbs_g: 11.3,
-          protein_g: 0.1
+      const response = await axios.get(`/v1_1/search/${encodeURIComponent(query)}`, {
+        headers: {
+          Authorization: `Bearer ${apiKey}`
         }
-      ].filter(food => 
-        food.name.toLowerCase().includes(query.toLowerCase())
-      );
+      });
       
-      setResults(mockResults);
+      const foods = response.data.foods || [];
+      
+      setResults(foods);
       setIsResultsVisible(true);
       
-      if (mockResults.length === 0) {
+      if (foods.length === 0) {
         toast.info('No food items found. Try a different search term.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Search error:', error);
-      toast.error('Failed to search. Please try again.');
+      toast.error(error.response?.data?.error || 'Failed to search. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +83,7 @@ const FoodSearchbar = ({ onFoodSelect }: FoodSearchbarProps) => {
         />
         <Button 
           type="submit" 
-          disabled={isLoading}
+          disabled={isLoading || !apiKey}
           className="rounded-l-none"
         >
           {isLoading ? 'Searching...' : 'Search'}

@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
+import axios from 'axios';
 
 const ApiKeyCard = () => {
   const { apiKey, generateApiKey } = useAuth();
   const [isRevealed, setIsRevealed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCopyClick = () => {
     if (!apiKey) return;
@@ -18,9 +20,12 @@ const ApiKeyCard = () => {
 
   const handleGenerateClick = async () => {
     try {
+      setIsLoading(true);
       await generateApiKey();
     } catch (error) {
       console.error('Failed to generate API key:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -74,8 +79,13 @@ const ApiKeyCard = () => {
           onClick={handleGenerateClick}
           className="w-full"
           variant={apiKey ? "outline" : "default"}
+          disabled={isLoading}
         >
-          {apiKey ? "Regenerate API Key" : "Generate API Key"}
+          {isLoading 
+            ? "Generating..." 
+            : apiKey 
+              ? "Regenerate API Key" 
+              : "Generate API Key"}
         </Button>
       </CardFooter>
     </Card>

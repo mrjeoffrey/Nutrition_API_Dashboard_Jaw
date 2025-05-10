@@ -5,9 +5,28 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/context/AuthContext';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useState } from 'react';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 const SubscriptionCard = () => {
-  const { subscription } = useAuth();
+  const { subscription, token } = useAuth();
+  const [loading, setLoading] = useState(false);
+
+  const handleManageSubscription = async () => {
+    if (!token) return;
+    
+    setLoading(true);
+    try {
+      const response = await axios.post('/api/subscriptions/create-portal-session');
+      window.location.href = response.data.url;
+    } catch (error) {
+      console.error('Failed to create portal session:', error);
+      toast.error('Failed to open subscription management portal');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!subscription) {
     return (
@@ -70,7 +89,14 @@ const SubscriptionCard = () => {
           <Link to="/pricing" className="w-full">
             <Button variant="outline" className="w-full">Upgrade</Button>
           </Link>
-          <Button variant="outline" className="w-full">Manage</Button>
+          <Button 
+            variant="outline" 
+            className="w-full" 
+            onClick={handleManageSubscription}
+            disabled={loading || subscription.tier === 'free'}
+          >
+            {loading ? 'Loading...' : 'Manage'}
+          </Button>
         </div>
       </CardFooter>
     </Card>

@@ -3,9 +3,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/context/AuthContext';
+import axios from 'axios';
 
 interface BarcodeScannerProps {
-  onDetected?: (code: string) => void;
+  onDetected?: (code: string, food: any) => void;
 }
 
 const BarcodeScanner = ({ onDetected }: BarcodeScannerProps) => {
@@ -13,6 +15,7 @@ const BarcodeScanner = ({ onDetected }: BarcodeScannerProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [scanning, setScanning] = useState(false);
   const [hasCamera, setHasCamera] = useState(true);
+  const { apiKey } = useAuth();
 
   const startScanning = async () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -33,12 +36,35 @@ const BarcodeScanner = ({ onDetected }: BarcodeScannerProps) => {
         setTimeout(() => {
           const mockBarcode = '049000042566'; // Example barcode (Coca-Cola)
           
-          if (onDetected) {
-            onDetected(mockBarcode);
+          if (apiKey) {
+            // Attempt to look up the food item
+            axios.get(`/v1_1/barcode?code=${mockBarcode}`, {
+              headers: {
+                Authorization: `Bearer ${apiKey}`
+              }
+            })
+            .then(response => {
+              if (onDetected) {
+                onDetected(mockBarcode, response.data);
+              }
+              toast.success(`Found: ${response.data.name}`);
+            })
+            .catch(error => {
+              if (onDetected) {
+                onDetected(mockBarcode, null);
+              }
+              toast.info(`Barcode detected: ${mockBarcode}, but no matching food found`);
+            })
+            .finally(() => {
+              stopScanning();
+            });
+          } else {
+            if (onDetected) {
+              onDetected(mockBarcode, null);
+            }
+            toast.success(`Barcode detected: ${mockBarcode}`);
+            stopScanning();
           }
-          
-          toast.success(`Barcode detected: ${mockBarcode}`);
-          stopScanning();
         }, 3000);
       }
     } catch (error) {
@@ -109,8 +135,8 @@ const BarcodeScanner = ({ onDetected }: BarcodeScannerProps) => {
                 Stop Scanning
               </Button>
             ) : (
-              <Button onClick={startScanning} disabled={!hasCamera}>
-                {hasCamera ? 'Start Scanning' : 'Camera Not Available'}
+              <Button onClick={startScanning} disabled={!hasCamera || !apiKey}>
+                {!hasCamera ? 'Camera Not Available' : !apiKey ? 'API Key Required' : 'Start Scanning'}
               </Button>
             )}
           </div>

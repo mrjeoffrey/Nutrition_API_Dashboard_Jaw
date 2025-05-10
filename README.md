@@ -1,73 +1,96 @@
-# Welcome to your Lovable project
 
-## Project info
+# NutriVerse API - Food Nutrition API Platform
 
-**URL**: https://lovable.dev/projects/638efa3f-9d57-4ea1-bdf4-98ac4249dd1d
+A full-stack application providing a nutrition API service with developer dashboard, user authentication, and subscription management.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **User Authentication**: Google OAuth and email/password login
+- **Developer Dashboard**: API key management, usage stats, documentation
+- **Admin Dashboard**: User management, food database management, data imports
+- **Food API System**: Search foods by name, lookup by barcode, detailed nutrition data
+- **Subscription Management**: Free, Basic, and Pro tiers with Stripe integration
+- **Responsive Design**: Mobile-friendly interface built with React and Tailwind CSS
 
-**Use Lovable**
+## Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/638efa3f-9d57-4ea1-bdf4-98ac4249dd1d) and start prompting.
+- **Frontend**: React, TailwindCSS, shadcn/ui
+- **Backend**: Node.js, Express
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT, Google OAuth
+- **Payments**: Stripe SDK
+- **API**: RESTful endpoints with rate limiting
 
-Changes made via Lovable will be committed automatically to this repo.
+## Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Node.js (v14+)
+- MongoDB (local or Atlas connection)
+- Stripe account for payment processing
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+1. Clone the repository
+2. Install dependencies
+   ```bash
+   npm install
+   ```
+3. Set up environment variables in `.env` file
+   ```
+   MONGODB_URI=your_mongodb_connection_string
+   JWT_SECRET=your_jwt_secret_key
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   STRIPE_SECRET_KEY=your_stripe_secret_key
+   STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+   ```
+4. Seed the database with initial data
+   ```bash
+   node seed.js
+   ```
+5. Start the development server
+   ```bash
+   npm run dev
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### API Endpoints
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+#### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+- `POST /api/auth/google` - Google OAuth authentication
+- `GET /api/auth/me` - Get current user
 
-# Step 3: Install the necessary dependencies.
-npm i
+#### API Keys
+- `GET /api/keys` - Get all API keys for current user
+- `POST /api/keys` - Generate new API key
+- `PUT /api/keys/:id/deactivate` - Deactivate API key
+- `GET /api/keys/usage` - Get API usage statistics
+- `GET /api/keys/logs` - Get recent API logs
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+#### Food API
+- `GET /v1_1/search/:query` - Search food by name
+- `GET /v1_1/item?id=:item_id` - Get food by ID
+- `GET /v1_1/barcode?code=:barcode` - Get food by barcode
 
-**Edit a file directly in GitHub**
+#### Admin Routes
+- `GET /api/admin/users` - Get all users
+- `PUT /api/admin/users/:id/toggle-status` - Toggle user status
+- `GET /api/admin/foods` - Get food items
+- `POST /api/admin/foods` - Add new food item
+- `DELETE /api/admin/foods/:id` - Delete food item
+- `POST /api/admin/foods/upload` - Upload CSV file for bulk food import
+- `GET /api/admin/api-usage` - Get API usage statistics
+- `GET /api/admin/promocodes` - Get promo codes
+- `POST /api/admin/promocodes` - Create promo code
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+#### Subscriptions
+- `GET /api/subscriptions/current` - Get current subscription
+- `POST /api/subscriptions/create-checkout-session` - Create checkout session
+- `POST /api/subscriptions/create-portal-session` - Create portal session
+- `POST /api/subscriptions/webhook` - Stripe webhook handler
 
-**Use GitHub Codespaces**
+## License
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/638efa3f-9d57-4ea1-bdf4-98ac4249dd1d) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This project is licensed under the MIT License.
