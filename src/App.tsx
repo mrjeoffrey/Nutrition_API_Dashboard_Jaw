@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { useEffect } from "react";
 import axios from "axios";
+import { initializeDatabase } from "./utils/databaseInit";
 
 // Pages
 import Index from "./pages/Index";
@@ -42,6 +43,9 @@ const setupAxios = () => {
 const App = () => {
   useEffect(() => {
     setupAxios();
+    
+    // Initialize the database with default foods if needed
+    initializeDatabase();
   }, []);
 
   return (

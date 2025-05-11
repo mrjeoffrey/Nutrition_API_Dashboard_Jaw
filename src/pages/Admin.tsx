@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import axios from 'axios';
 
 const Admin = () => {
   const { user, loading } = useAuth();
@@ -65,6 +65,73 @@ const Admin = () => {
     if (e.target.files && e.target.files[0]) {
       // In a real app, we would process the CSV file here
       toast.success('File uploaded, processing data');
+    }
+  };
+  
+  const handleAddDefaultFoods = async () => {
+    try {
+      const defaultFoods = [
+        {
+          name: 'Apple',
+          calories: 52,
+          serving_size_g: 100,
+          fat_g: 0.2,
+          carbs_g: 14,
+          protein_g: 0.3,
+          fiber_g: 2.4,
+          sugar_g: 10.3,
+          sodium_mg: 1
+        },
+        {
+          name: 'Banana',
+          calories: 89,
+          serving_size_g: 100,
+          fat_g: 0.3,
+          carbs_g: 23,
+          protein_g: 1.1,
+          fiber_g: 2.6,
+          sugar_g: 12.2,
+          sodium_mg: 1
+        },
+        {
+          name: 'Chicken Breast',
+          calories: 165,
+          serving_size_g: 100,
+          fat_g: 3.6,
+          carbs_g: 0,
+          protein_g: 31,
+          fiber_g: 0,
+          sugar_g: 0,
+          sodium_mg: 74
+        },
+        {
+          name: 'Brown Rice',
+          calories: 112,
+          serving_size_g: 100,
+          fat_g: 0.9,
+          carbs_g: 23.5,
+          protein_g: 2.6,
+          fiber_g: 1.8,
+          sugar_g: 0.4,
+          sodium_mg: 5
+        }
+      ];
+      
+      // Add each food to the database
+      for (const food of defaultFoods) {
+        await axios.post('/admin/foods', food);
+      }
+      
+      // Refresh the food list
+      setFoods([...foods, ...defaultFoods.map((food, index) => ({ 
+        id: `new-${index}`, 
+        ...food 
+      }))]);
+      
+      toast.success('Default food items have been added to the database.');
+    } catch (error) {
+      console.error('Error adding default foods:', error);
+      toast.error('Failed to add default food items.');
     }
   };
   
@@ -155,7 +222,8 @@ const Admin = () => {
                   <CardDescription>Manage food items and nutrition data</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="mb-4 flex justify-end">
+                  <div className="mb-4 flex justify-end gap-2">
+                    <Button onClick={handleAddDefaultFoods}>Add Default Foods</Button>
                     <Button>Add Food Item</Button>
                   </div>
                   
