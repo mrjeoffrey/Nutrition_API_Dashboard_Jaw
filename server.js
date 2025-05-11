@@ -1,18 +1,17 @@
-
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const helmet = require('helmet');
-const dotenv = require('dotenv');
-const path = require('path');
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import helmet from 'helmet';
+import dotenv from 'dotenv';
+import path from 'path';
 
 // Import routes
-const authRoutes = require('./routes/auth.routes');
-const userRoutes = require('./routes/user.routes');
-const foodRoutes = require('./routes/food.routes');
-const apiKeyRoutes = require('./routes/apiKey.routes');
-const adminRoutes = require('./routes/admin.routes');
-const subscriptionRoutes = require('./routes/subscription.routes');
+import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/user.routes.js';
+import foodRoutes from './routes/food.routes.js';
+import apiKeyRoutes from './routes/apiKey.routes.js'; // Ensure this matches the default export
+import { adminRoutes } from './routes/admin.routes.js'; // Ensure this matches the named export from admin.routes
+import subscriptionRoutes from './routes/subscription.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -47,10 +46,10 @@ app.use('/v1_1', foodRoutes);
 
 // Serve static assets if in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'dist')));
-  
+  app.use(express.static(path.join(path.resolve(), 'dist')));
+
   app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+    res.sendFile(path.resolve('dist', 'index.html'));
   });
 }
 

@@ -1,15 +1,15 @@
+import express from 'express';
+import multer from 'multer';
+import csv from 'csv-parser';
+import fs from 'fs';
+import { Readable } from 'stream';
+import User from '../models/User.js';
+import Food from '../models/Food.js';
+import ApiLog from '../models/ApiLog.js';
+import PromoCode from '../models/PromoCode.js';
+import { protect, admin } from '../middleware/auth.js';
 
-const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const csv = require('csv-parser');
-const fs = require('fs');
-const { Readable } = require('stream');
-const User = require('../models/User');
-const Food = require('../models/Food');
-const ApiLog = require('../models/ApiLog');
-const PromoCode = require('../models/PromoCode');
-const { protect, admin } = require('../middleware/auth');
 
 // Configure multer storage
 const storage = multer.memoryStorage();
@@ -278,4 +278,4 @@ router.post('/promocodes', async (req, res) => {
   }
 });
 
-module.exports = router;
+export const adminRoutes = router;

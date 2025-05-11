@@ -31,7 +31,7 @@ interface AuthContextType {
   token: string | null;
 }
 
-const API_URL = '/api';
+const API_URL = 'http://localhost:5000';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

@@ -1,8 +1,8 @@
+import express from 'express';
+import User from '../models/User.js';
+import { protect } from '../middleware/auth.js';
 
-const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
-const { protect } = require('../middleware/auth');
 
 // Update user profile
 router.put('/profile', protect, async (req, res) => {
@@ -59,4 +59,4 @@ router.put('/password', protect, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

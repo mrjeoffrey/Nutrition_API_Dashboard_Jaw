@@ -1,8 +1,8 @@
+import express from 'express';
+import Food from '../models/Food.js';
+import apiKeyAuth from '../middleware/apiKeyAuth.js';
 
-const express = require('express');
 const router = express.Router();
-const Food = require('../models/Food');
-const apiKeyAuth = require('../middleware/apiKeyAuth');
 
 // Apply API key authentication middleware to all routes
 router.use(apiKeyAuth);
@@ -89,4 +89,4 @@ router.get('/barcode', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

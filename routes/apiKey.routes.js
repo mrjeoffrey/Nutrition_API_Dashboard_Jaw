@@ -1,9 +1,9 @@
+import express from 'express';
+import ApiKey from '../models/ApiKey.js';
+import ApiLog from '../models/ApiLog.js';
+import { protect } from '../middleware/auth.js';
 
-const express = require('express');
 const router = express.Router();
-const ApiKey = require('../models/ApiKey');
-const ApiLog = require('../models/ApiLog');
-const { protect } = require('../middleware/auth');
 
 // Get all API keys for current user
 router.get('/', protect, async (req, res) => {
@@ -124,4 +124,4 @@ router.get('/logs', protect, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

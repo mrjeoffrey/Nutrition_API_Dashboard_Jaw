@@ -1,8 +1,7 @@
-
-const mongoose = require('mongoose');
-const Food = require('./models/Food');
-const User = require('./models/User');
-const dotenv = require('dotenv');
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import Food from './models/Food.js';
+import User from './models/User.js';
 
 // Load environment variables
 dotenv.config();

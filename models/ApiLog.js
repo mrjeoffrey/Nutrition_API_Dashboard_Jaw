@@ -1,5 +1,4 @@
-
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ApiLogSchema = new mongoose.Schema({
   apiKey: {
@@ -39,4 +38,4 @@ const ApiLogSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('ApiLog', ApiLogSchema);
+export default mongoose.model('ApiLog', ApiLogSchema);

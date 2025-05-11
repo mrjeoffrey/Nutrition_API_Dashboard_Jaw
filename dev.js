@@ -1,9 +1,8 @@
-
-const concurrently = require('concurrently');
-const path = require('path');
+import concurrently from 'concurrently';
+import path from 'path';
 
 // Run the backend and frontend concurrently
-concurrently([
+const { result } = concurrently([
   { 
     command: 'node server.js',
     name: 'backend',
@@ -16,10 +15,10 @@ concurrently([
   }
 ], {
   prefix: 'name',
-  killOthers: ['failure', 'success'],
-  restartTries: 3,
-  restartDelay: 1000
-}).then(
-  () => console.log('All processes exited with success'),
-  (err) => console.error('Error occurred:', err)
-);
+  killOthers: ['failure'],
+  restartTries: 3
+});
+
+result.catch((err) => {
+  console.error('Error occurred:', err.message || err);
+});

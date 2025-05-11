@@ -1,11 +1,12 @@
+import express from 'express';
+import stripe from 'stripe';
+import User from '../models/User.js';
+import Subscription from '../models/Subscription.js';
+import PromoCode from '../models/PromoCode.js';
+import { protect } from '../middleware/auth.js';
 
-const express = require('express');
 const router = express.Router();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const User = require('../models/User');
-const Subscription = require('../models/Subscription');
-const PromoCode = require('../models/PromoCode');
-const { protect } = require('../middleware/auth');
+const stripeInstance = stripe(process.env.STRIPE_SECRET_KEY);
 
 // Get current subscription
 router.get('/current', protect, async (req, res) => {
@@ -45,7 +46,7 @@ router.post('/create-checkout-session', protect, async (req, res) => {
     
     // Get or create customer
     let customerId;
-    const customerSearch = await stripe.customers.list({
+    const customerSearch = await stripeInstance.customers.list({
       email: req.user.email,
       limit: 1
     });
@@ -53,7 +54,7 @@ router.post('/create-checkout-session', protect, async (req, res) => {
     if (customerSearch.data.length > 0) {
       customerId = customerSearch.data[0].id;
     } else {
-      const customer = await stripe.customers.create({
+      const customer = await stripeInstance.customers.create({
         email: req.user.email,
         name: req.user.name,
         metadata: {
@@ -91,9 +92,9 @@ router.post('/create-checkout-session', protect, async (req, res) => {
           // Create a coupon in Stripe if it doesn't exist
           let coupon;
           try {
-            coupon = await stripe.coupons.retrieve(`PROMO_${promo.code}`);
+            coupon = await stripeInstance.coupons.retrieve(`PROMO_${promo.code}`);
           } catch (err) {
-            coupon = await stripe.coupons.create({
+            coupon = await stripeInstance.coupons.create({
               id: `PROMO_${promo.code}`,
               percent_off: promo.discount,
               duration: 'once'
@@ -110,7 +111,7 @@ router.post('/create-checkout-session', protect, async (req, res) => {
     }
     
     // Create the checkout session
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    const session = await stripeInstance.checkout.sessions.create(sessionParams);
     
     res.json({ id: session.id, url: session.url });
   } catch (error) {
@@ -130,7 +131,7 @@ router.post('/create-portal-session', protect, async (req, res) => {
     }
     
     // Create portal session
-    const session = await stripe.billingPortal.sessions.create({
+    const session = await stripeInstance.billingPortal.sessions.create({
       customer: subscription.stripeCustomerId,
       return_url: `${req.headers.origin}/dashboard`
     });
@@ -149,7 +150,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   let event;
   
   try {
-    event = stripe.webhooks.constructEvent(
+    event = stripeInstance.webhooks.constructEvent(
       req.rawBody || req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
@@ -168,7 +169,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       try {
         if (session.mode === 'subscription' && session.metadata.userId) {
           // Get subscription details from Stripe
-          const stripeSubscription = await stripe.subscriptions.retrieve(session.subscription);
+          const stripeSubscription = await stripeInstance.subscriptions.retrieve(session.subscription);
           
           // Determine the subscription tier based on the price
           let plan = 'basic';
@@ -229,4 +230,4 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   res.json({ received: true });
 });
 
-module.exports = router;
+export default router;

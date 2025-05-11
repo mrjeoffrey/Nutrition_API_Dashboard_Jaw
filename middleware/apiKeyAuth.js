@@ -1,10 +1,9 @@
+import ApiKey from '../models/ApiKey.js';
+import User from '../models/User.js';
+import Subscription from '../models/Subscription.js';
+import ApiLog from '../models/ApiLog.js';
 
-const ApiKey = require('../models/ApiKey');
-const User = require('../models/User');
-const Subscription = require('../models/Subscription');
-const ApiLog = require('../models/ApiLog');
-
-module.exports = async (req, res, next) => {
+export default async (req, res, next) => {
   const apiKey = req.headers.authorization ? req.headers.authorization.replace('Bearer ', '') : null;
   
   if (!apiKey) {
