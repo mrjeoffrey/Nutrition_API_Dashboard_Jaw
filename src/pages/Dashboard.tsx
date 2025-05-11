@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ApiKeyCard from '@/components/ApiKeyCard';
@@ -9,27 +11,60 @@ import SubscriptionCard from '@/components/SubscriptionCard';
 import ApiUsageChart from '@/components/ApiUsageChart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { format } from 'date-fns';
+
+interface ApiLog {
+  _id: string;
+  endpoint: string;
+  method: string;
+  status: number;
+  responseTime: number;
+  timestamp: string;
+}
 
 const Dashboard = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, token } = useAuth();
   const navigate = useNavigate();
-  const [apiUsageData, setApiUsageData] = useState<{ name: string; value: number }[]>([]);
+  
+  // Fetch API logs
+  const { data: apiLogs = [], isLoading: isLogsLoading } = useQuery({
+    queryKey: ['apiLogs'],
+    queryFn: async () => {
+      const response = await axios.get('http://localhost:5000/api/keys/logs', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      return response.data || [];
+    },
+    enabled: !!user && !!token,
+    staleTime: 1000 * 60, // Refresh every minute
+  });
+  
+  // Fetch API usage data
+  const { data: apiUsageData = [], isLoading: isUsageLoading } = useQuery({
+    queryKey: ['apiUsage'],
+    queryFn: async () => {
+      const response = await axios.get('http://localhost:5000/api/keys/usage', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      // Format the data for the chart
+      return response.data.map((item: { date: string; count: number }) => ({
+        name: item.date.substring(5), // Format to "MM-DD"
+        value: item.count
+      })) || [];
+    },
+    enabled: !!user && !!token,
+    staleTime: 1000 * 60, // Refresh every minute
+  });
   
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login');
     }
-    
-    // Generate mock API usage data
-    const generateMockData = () => {
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      return days.map(day => ({
-        name: day,
-        value: Math.floor(Math.random() * 80) + 10
-      }));
-    };
-    
-    setApiUsageData(generateMockData());
   }, [user, loading, navigate]);
   
   if (loading || !user) {
@@ -159,44 +194,45 @@ const Dashboard = () => {
                       <CardDescription>Recent API calls made from your account</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full">
-                          <thead>
-                            <tr className="border-b">
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Timestamp</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Endpoint</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Status</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Response Time</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr className="border-b">
-                              <td className="py-3 px-4 text-sm">2025-05-10 14:32:15</td>
-                              <td className="py-3 px-4 text-sm font-mono">/v1_1/search/banana</td>
-                              <td className="py-3 px-4"><span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded">200 OK</span></td>
-                              <td className="py-3 px-4 text-sm">124ms</td>
-                            </tr>
-                            <tr className="border-b">
-                              <td className="py-3 px-4 text-sm">2025-05-10 14:31:42</td>
-                              <td className="py-3 px-4 text-sm font-mono">/v1_1/item?id=12345</td>
-                              <td className="py-3 px-4"><span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded">200 OK</span></td>
-                              <td className="py-3 px-4 text-sm">98ms</td>
-                            </tr>
-                            <tr className="border-b">
-                              <td className="py-3 px-4 text-sm">2025-05-10 14:30:55</td>
-                              <td className="py-3 px-4 text-sm font-mono">/v1_1/search/apple</td>
-                              <td className="py-3 px-4"><span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded">200 OK</span></td>
-                              <td className="py-3 px-4 text-sm">112ms</td>
-                            </tr>
-                            <tr>
-                              <td className="py-3 px-4 text-sm">2025-05-10 14:28:19</td>
-                              <td className="py-3 px-4 text-sm font-mono">/v1_1/barcode?code=12345</td>
-                              <td className="py-3 px-4"><span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded">404 Not Found</span></td>
-                              <td className="py-3 px-4 text-sm">87ms</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
+                      {isLogsLoading ? (
+                        <div className="text-center py-6">Loading logs...</div>
+                      ) : apiLogs.length === 0 ? (
+                        <div className="text-center py-6 text-gray-500">No API requests logged yet</div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full">
+                            <thead>
+                              <tr className="border-b">
+                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Timestamp</th>
+                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Endpoint</th>
+                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Status</th>
+                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Response Time</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {apiLogs.map((log: ApiLog) => (
+                                <tr key={log._id} className="border-b">
+                                  <td className="py-3 px-4 text-sm">
+                                    {format(new Date(log.timestamp), 'yyyy-MM-dd HH:mm:ss')}
+                                  </td>
+                                  <td className="py-3 px-4 text-sm font-mono">{log.endpoint}</td>
+                                  <td className="py-3 px-4">
+                                    <span className={`
+                                      ${log.status >= 200 && log.status < 300 ? 'bg-green-100 text-green-800' : ''}
+                                      ${log.status >= 400 && log.status < 500 ? 'bg-yellow-100 text-yellow-800' : ''}
+                                      ${log.status >= 500 ? 'bg-red-100 text-red-800' : ''}
+                                      text-xs font-medium px-2 py-0.5 rounded
+                                    `}>
+                                      {log.status} {log.status === 200 ? 'OK' : log.status === 404 ? 'Not Found' : ''}
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-4 text-sm">{log.responseTime}ms</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </TabsContent>

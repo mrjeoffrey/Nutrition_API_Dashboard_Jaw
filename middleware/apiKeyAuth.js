@@ -5,10 +5,16 @@ import Subscription from '../models/Subscription.js';
 import ApiLog from '../models/ApiLog.js';
 
 export default async (req, res, next) => {
-  // Check for API key in headers
-  const apiKey = req.headers.authorization 
-    ? req.headers.authorization.replace('Bearer ', '') 
-    : req.query.apiKey || null; // Also check for API key in query parameter
+  // Check for API key in headers or query params
+  let apiKey = null;
+  
+  if (req.headers.authorization) {
+    // Extract from Authorization header
+    apiKey = req.headers.authorization.replace('Bearer ', '');
+  } else if (req.query.apiKey) {
+    // Extract from query parameter
+    apiKey = req.query.apiKey;
+  }
   
   if (!apiKey) {
     return res.status(401).json({ error: 'API key is required' });
@@ -46,21 +52,22 @@ export default async (req, res, next) => {
     });
     
     // Call next middleware
+    res.on('finish', () => {
+      // This will execute after the response is sent
+      const responseTime = Date.now() - startTime;
+      
+      ApiLog.create({
+        apiKey: apiKey,
+        user: keyData.user._id,
+        endpoint: req.originalUrl,
+        method: req.method,
+        status: res.statusCode,
+        ip: req.ip,
+        responseTime
+      }).catch(err => console.error('Error logging API request:', err));
+    });
+    
     next();
-    
-    // Log after response is sent
-    const responseTime = Date.now() - startTime;
-    
-    ApiLog.create({
-      apiKey: apiKey,
-      user: keyData.user._id,
-      endpoint: req.originalUrl,
-      method: req.method,
-      status: res.statusCode,
-      ip: req.ip,
-      responseTime
-    }).catch(err => console.error('Error logging API request:', err));
-    
   } catch (error) {
     console.error('API Key Auth Error:', error);
     return res.status(500).json({ error: 'Server error' });

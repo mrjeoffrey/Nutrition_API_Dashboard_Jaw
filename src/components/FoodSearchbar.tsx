@@ -6,15 +6,20 @@ import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
+import FoodDetailModal from './FoodDetailModal';
 
 interface Food {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
   calories: number;
   serving_size_g: number;
   fat_g: number;
   carbs_g: number;
   protein_g: number;
+  fiber_g?: number;
+  sugar_g?: number;
+  sodium_mg?: number;
 }
 
 interface FoodSearchbarProps {
@@ -25,6 +30,8 @@ const FoodSearchbar = ({ onFoodSelect }: FoodSearchbarProps) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Food[]>([]);
   const [isResultsVisible, setIsResultsVisible] = useState(false);
+  const [selectedFood, setSelectedFood] = useState<Food | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { apiKey } = useAuth();
 
   // Search mutation with React Query
@@ -68,10 +75,13 @@ const FoodSearchbar = ({ onFoodSelect }: FoodSearchbarProps) => {
   };
 
   const handleFoodSelect = (food: Food) => {
+    setSelectedFood(food);
+    setIsModalOpen(true);
+    setIsResultsVisible(false);
+    
     if (onFoodSelect) {
       onFoodSelect(food);
     }
-    setIsResultsVisible(false);
   };
 
   return (
@@ -97,7 +107,7 @@ const FoodSearchbar = ({ onFoodSelect }: FoodSearchbarProps) => {
           <ul className="py-1">
             {results.map((food) => (
               <li
-                key={food.id}
+                key={food.id || food._id}
                 className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                 onClick={() => handleFoodSelect(food)}
               >
@@ -110,6 +120,12 @@ const FoodSearchbar = ({ onFoodSelect }: FoodSearchbarProps) => {
           </ul>
         </div>
       )}
+
+      <FoodDetailModal 
+        food={selectedFood} 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 };
