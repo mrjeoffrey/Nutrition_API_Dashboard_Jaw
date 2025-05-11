@@ -11,6 +11,25 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import axios from 'axios';
 
+// Update the Food interface to accommodate both formats
+interface Food {
+  id: string;
+  name: string;
+  calories: number;
+  // Make these optional with fat_g as an alternative
+  fat?: number;
+  carbs?: number;
+  protein?: number;
+  // Add the alternative field names
+  fat_g?: number;
+  carbs_g?: number;
+  protein_g?: number;
+  serving_size_g?: number;
+  fiber_g?: number;
+  sugar_g?: number;
+  sodium_mg?: number;
+}
+
 const Admin = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -22,14 +41,14 @@ const Admin = () => {
     }
   }, [user, loading, navigate]);
   
-  // Mock data
+  // Mock data with updated types
   const [users, setUsers] = useState([
     { id: '1', name: 'John Doe', email: 'john@example.com', status: 'active', apiKey: 'nutr_123abc', plan: 'pro' },
     { id: '2', name: 'Jane Smith', email: 'jane@example.com', status: 'active', apiKey: 'nutr_456def', plan: 'basic' },
     { id: '3', name: 'Bob Johnson', email: 'bob@example.com', status: 'blocked', apiKey: 'nutr_789ghi', plan: 'free' },
   ]);
   
-  const [foods, setFoods] = useState([
+  const [foods, setFoods] = useState<Food[]>([
     { id: '1', name: 'Apple', calories: 95, fat: 0.3, carbs: 25, protein: 0.5 },
     { id: '2', name: 'Banana', calories: 105, fat: 0.4, carbs: 27, protein: 1.3 },
     { id: '3', name: 'Chicken Breast', calories: 165, fat: 3.6, carbs: 0, protein: 31 },
@@ -122,11 +141,22 @@ const Admin = () => {
         await axios.post('/admin/foods', food);
       }
       
-      // Refresh the food list
-      setFoods([...foods, ...defaultFoods.map((food, index) => ({ 
-        id: `new-${index}`, 
-        ...food 
-      }))]);
+      // Map the default foods to match our Food interface
+      const mappedFoods = defaultFoods.map((food, index) => ({ 
+        id: `new-${index}`,
+        name: food.name,
+        calories: food.calories,
+        fat_g: food.fat_g,
+        carbs_g: food.carbs_g,
+        protein_g: food.protein_g,
+        serving_size_g: food.serving_size_g,
+        fiber_g: food.fiber_g,
+        sugar_g: food.sugar_g,
+        sodium_mg: food.sodium_mg
+      }));
+      
+      // Update the foods state with the new foods
+      setFoods([...foods, ...mappedFoods]);
       
       toast.success('Default food items have been added to the database.');
     } catch (error) {
@@ -244,9 +274,9 @@ const Admin = () => {
                           <tr key={food.id} className="border-b">
                             <td className="py-3 px-4">{food.name}</td>
                             <td className="py-3 px-4">{food.calories}</td>
-                            <td className="py-3 px-4">{food.fat}</td>
-                            <td className="py-3 px-4">{food.carbs}</td>
-                            <td className="py-3 px-4">{food.protein}</td>
+                            <td className="py-3 px-4">{food.fat || food.fat_g}</td>
+                            <td className="py-3 px-4">{food.carbs || food.carbs_g}</td>
+                            <td className="py-3 px-4">{food.protein || food.protein_g}</td>
                             <td className="py-3 px-4 space-x-2">
                               <Button variant="outline" size="sm">Edit</Button>
                               <Button 
