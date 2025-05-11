@@ -1,3 +1,4 @@
+
 import express from 'express';
 import ApiKey from '../models/ApiKey.js';
 import ApiLog from '../models/ApiLog.js';
@@ -19,11 +20,12 @@ router.get('/', protect, async (req, res) => {
 // Generate new API key
 router.post('/', protect, async (req, res) => {
   try {
-    const { name } = req.body;
+    // Add a default value if req.body is undefined
+    const name = req.body?.name || 'API Key';
     
     const apiKey = new ApiKey({
       user: req.user._id,
-      name: name || 'API Key'
+      name: name
     });
     
     await apiKey.save();

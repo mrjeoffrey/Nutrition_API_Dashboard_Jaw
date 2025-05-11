@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -175,7 +174,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const generateApiKey = async () => {
     try {
-      const res = await axios.post(`${API_URL}/keys`);
+      // Add name property to request body
+      const res = await axios.post(`${API_URL}/keys`, { name: 'Default API Key' });
       const newApiKey = res.data.key;
       setApiKey(newApiKey);
       toast.success('API Key generated successfully');

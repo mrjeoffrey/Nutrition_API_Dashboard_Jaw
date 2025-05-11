@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import axios from 'axios';
 
 const ApiKeyCard = () => {
   const { apiKey, generateApiKey } = useAuth();
