@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -26,6 +27,7 @@ interface AuthContextType {
   login: (response: any) => void;
   logout: () => void;
   apiKey: string | null;
+  setApiKey: (key: string | null) => void;
   generateApiKey: () => Promise<string>;
   token: string | null;
 }
@@ -195,6 +197,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       login, 
       logout, 
       apiKey, 
+      setApiKey,
       generateApiKey,
       token
     }}>

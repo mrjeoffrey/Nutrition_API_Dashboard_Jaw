@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 interface ApiUsageChartProps {
@@ -15,41 +16,33 @@ interface ApiUsageChartProps {
 
 const ApiUsageChart = ({ data: initialData, adminView = false }: ApiUsageChartProps) => {
   const { token } = useAuth();
-  const [data, setData] = useState<{ name: string; value: number }[]>(initialData || []);
-  const [loading, setLoading] = useState(!initialData);
   
-  useEffect(() => {
-    if (initialData) {
-      setData(initialData);
-      return;
-    }
-    
-    const fetchUsageData = async () => {
-      if (!token) return;
+  // Use React Query to fetch usage data
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['apiUsage', adminView],
+    queryFn: async () => {
+      if (!token || initialData) return initialData;
       
-      setLoading(true);
-      try {
-        const endpoint = adminView 
-          ? '/api/admin/api-usage?days=7' 
-          : '/api/keys/usage';
-          
-        const response = await axios.get(endpoint);
+      const endpoint = adminView 
+        ? 'http://localhost:5000/api/admin/api-usage?days=7' 
+        : 'http://localhost:5000/api/keys/usage';
         
-        const usageData = response.data.map((item: any) => ({
-          name: item.date || item._id,
-          value: item.count
-        }));
-        
-        setData(usageData);
-      } catch (error) {
-        console.error('Failed to fetch API usage data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchUsageData();
-  }, [token, initialData, adminView]);
+      const response = await axios.get(endpoint, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      return response.data.map((item: any) => ({
+        name: item.date || item._id,
+        value: item.count
+      }));
+    },
+    // Use initialData as fallback if provided
+    initialData: initialData,
+    // Only run query if we don't have initialData and a token
+    enabled: !initialData && !!token,
+  });
+  
+  const chartData = data || [];
   
   return (
     <Card>
@@ -61,16 +54,20 @@ const ApiUsageChart = ({ data: initialData, adminView = false }: ApiUsageChartPr
       </CardHeader>
       <CardContent>
         <div className="h-80 w-full">
-          {loading ? (
+          {isLoading ? (
             <div className="h-full w-full flex items-center justify-center">
               <p className="text-gray-500">Loading data...</p>
             </div>
-          ) : data.length > 0 ? (
+          ) : error ? (
+            <div className="h-full w-full flex items-center justify-center">
+              <p className="text-red-500">Error loading usage data</p>
+            </div>
+          ) : chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 width={500}
                 height={300}
-                data={data}
+                data={chartData}
                 margin={{
                   top: 5,
                   right: 30,

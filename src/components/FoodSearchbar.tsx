@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
+import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
 interface Food {
@@ -22,10 +23,33 @@ interface FoodSearchbarProps {
 
 const FoodSearchbar = ({ onFoodSelect }: FoodSearchbarProps) => {
   const [query, setQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<Food[]>([]);
   const [isResultsVisible, setIsResultsVisible] = useState(false);
   const { apiKey } = useAuth();
+
+  // Search mutation with React Query
+  const searchMutation = useMutation({
+    mutationFn: async (searchTerm: string) => {
+      const response = await axios.get(`http://localhost:5000/v1_1/search/${encodeURIComponent(searchTerm)}`, {
+        headers: {
+          Authorization: `Bearer ${apiKey}`
+        }
+      });
+      return response.data.foods || [];
+    },
+    onSuccess: (data) => {
+      setResults(data);
+      setIsResultsVisible(true);
+      
+      if (data.length === 0) {
+        toast.info('No food items found. Try a different search term.');
+      }
+    },
+    onError: (error: any) => {
+      console.error('Search error:', error);
+      toast.error(error.response?.data?.error || 'Failed to search. Please try again.');
+    }
+  });
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,29 +64,7 @@ const FoodSearchbar = ({ onFoodSelect }: FoodSearchbarProps) => {
       return;
     }
     
-    setIsLoading(true);
-    
-    try {
-      const response = await axios.get(`/v1_1/search/${encodeURIComponent(query)}`, {
-        headers: {
-          Authorization: `Bearer ${apiKey}`
-        }
-      });
-      
-      const foods = response.data.foods || [];
-      
-      setResults(foods);
-      setIsResultsVisible(true);
-      
-      if (foods.length === 0) {
-        toast.info('No food items found. Try a different search term.');
-      }
-    } catch (error: any) {
-      console.error('Search error:', error);
-      toast.error(error.response?.data?.error || 'Failed to search. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    searchMutation.mutate(query);
   };
 
   const handleFoodSelect = (food: Food) => {
@@ -83,10 +85,10 @@ const FoodSearchbar = ({ onFoodSelect }: FoodSearchbarProps) => {
         />
         <Button 
           type="submit" 
-          disabled={isLoading || !apiKey}
+          disabled={searchMutation.isPending || !apiKey}
           className="rounded-l-none"
         >
-          {isLoading ? 'Searching...' : 'Search'}
+          {searchMutation.isPending ? 'Searching...' : 'Search'}
         </Button>
       </form>
       

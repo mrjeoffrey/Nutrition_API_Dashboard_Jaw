@@ -5,11 +5,34 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 
 const ApiKeyCard = () => {
-  const { apiKey, generateApiKey } = useAuth();
+  const { apiKey, setApiKey, token } = useAuth();
   const [isRevealed, setIsRevealed] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+  
+  // Create API key mutation
+  const apiKeyMutation = useMutation({
+    mutationFn: async () => {
+      const response = await axios.post(
+        'http://localhost:5000/api/keys', 
+        { name: 'Default API Key' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setApiKey(data.key);
+      queryClient.invalidateQueries({ queryKey: ['apiKey'] });
+      toast.success('API key generated successfully');
+    },
+    onError: (error) => {
+      console.error('Failed to generate API key:', error);
+      toast.error('Failed to generate API key');
+    }
+  });
 
   const handleCopyClick = () => {
     if (!apiKey) return;
@@ -17,15 +40,8 @@ const ApiKeyCard = () => {
     toast.success('API key copied to clipboard');
   };
 
-  const handleGenerateClick = async () => {
-    try {
-      setIsLoading(true);
-      await generateApiKey();
-    } catch (error) {
-      console.error('Failed to generate API key:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleGenerateClick = () => {
+    apiKeyMutation.mutate();
   };
 
   const toggleReveal = () => {
@@ -78,9 +94,9 @@ const ApiKeyCard = () => {
           onClick={handleGenerateClick}
           className="w-full"
           variant={apiKey ? "outline" : "default"}
-          disabled={isLoading}
+          disabled={apiKeyMutation.isPending}
         >
-          {isLoading 
+          {apiKeyMutation.isPending 
             ? "Generating..." 
             : apiKey 
               ? "Regenerate API Key" 

@@ -5,28 +5,31 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/context/AuthContext';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'sonner';
 
 const SubscriptionCard = () => {
   const { subscription, token } = useAuth();
-  const [loading, setLoading] = useState(false);
 
-  const handleManageSubscription = async () => {
-    if (!token) return;
-    
-    setLoading(true);
-    try {
-      const response = await axios.post('/api/subscriptions/create-portal-session');
-      window.location.href = response.data.url;
-    } catch (error) {
+  // Create portal session mutation
+  const portalMutation = useMutation({
+    mutationFn: async () => {
+      const response = await axios.post(
+        'http://localhost:5000/api/subscriptions/create-portal-session', 
+        {}, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      window.location.href = data.url;
+    },
+    onError: (error) => {
       console.error('Failed to create portal session:', error);
       toast.error('Failed to open subscription management portal');
-    } finally {
-      setLoading(false);
     }
-  };
+  });
 
   if (!subscription) {
     return (
@@ -92,10 +95,10 @@ const SubscriptionCard = () => {
           <Button 
             variant="outline" 
             className="w-full" 
-            onClick={handleManageSubscription}
-            disabled={loading || subscription.tier === 'free'}
+            onClick={() => portalMutation.mutate()}
+            disabled={portalMutation.isPending || subscription.tier === 'free'}
           >
-            {loading ? 'Loading...' : 'Manage'}
+            {portalMutation.isPending ? 'Loading...' : 'Manage'}
           </Button>
         </div>
       </CardFooter>
