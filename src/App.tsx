@@ -20,8 +20,11 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Set up axios with the authorization header
+// Set up axios with the authorization header and base URL
 const setupAxios = () => {
+  // Set base URL for API requests
+  axios.defaults.baseURL = 'http://localhost:5000';
+  
   const token = localStorage.getItem('token');
   if (token) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;

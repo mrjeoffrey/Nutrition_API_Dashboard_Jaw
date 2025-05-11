@@ -20,51 +20,24 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // In a real app, we would make an API call to a backend for authentication
-      // For this demo, we'll simulate a successful login
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simulate Google OAuth user data
-      const userData = {
-        sub: "123456789",
-        name: "Demo User",
-        email: email,
-        picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(email.split('@')[0])}`
-      };
-      
-      login(userData);
+      // Use the real login function from AuthContext
+      await login({
+        email,
+        password
+      });
       navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
-      toast.error("Login failed. Please check your credentials and try again.");
+      // Login errors are handled in the context
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    
-    try {
-      // Simulate Google OAuth login
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simulate Google OAuth user data
-      const userData = {
-        sub: "123456789",
-        name: "Demo User",
-        email: "demo@example.com",
-        picture: "https://ui-avatars.com/api/?name=Demo+User"
-      };
-      
-      login(userData);
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Google login failed:", error);
-      toast.error("Google login failed. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+  const handleGoogleLogin = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    toast.info("Google login is not fully integrated yet. Use email login instead.");
+    // In a real implementation, this would initialize the Google OAuth flow
   };
 
   return (

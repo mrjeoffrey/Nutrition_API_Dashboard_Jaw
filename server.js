@@ -1,3 +1,4 @@
+
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -9,8 +10,8 @@ import path from 'path';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import foodRoutes from './routes/food.routes.js';
-import apiKeyRoutes from './routes/apiKey.routes.js'; // Ensure this matches the default export
-import { adminRoutes } from './routes/admin.routes.js'; // Ensure this matches the named export from admin.routes
+import apiKeyRoutes from './routes/apiKey.routes.js'; 
+import { adminRoutes } from './routes/admin.routes.js';
 import subscriptionRoutes from './routes/subscription.routes.js';
 
 // Load environment variables
@@ -34,7 +35,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/nutrivers
     process.exit(1);
   });
 
-// API Routes
+// API Routes - all under /api namespace
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/keys', apiKeyRoutes);

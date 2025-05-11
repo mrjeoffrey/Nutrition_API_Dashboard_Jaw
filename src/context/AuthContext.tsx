@@ -31,7 +31,8 @@ interface AuthContextType {
   token: string | null;
 }
 
-const API_URL = 'http://localhost:5000';
+// Define base API URL - use the correct path
+const API_URL = 'http://localhost:5000/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Set axios auth header
           axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
           
-          // Fetch user data
+          // Fetch user data - corrected path
           const res = await axios.get(`${API_URL}/auth/me`);
           setUser({
             id: res.data._id,
@@ -64,10 +65,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             role: res.data.role
           });
           
-          // Fetch API key if available
+          // Fetch API key if available - corrected path
           await fetchApiKey();
           
-          // Fetch subscription data
+          // Fetch subscription data - corrected path
           await fetchSubscription();
         }
       } catch (error) {
@@ -85,9 +86,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchApiKey = async () => {
     try {
       const res = await axios.get(`${API_URL}/keys`);
-      if (res.data && res.data.length > 0) {
+      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
         // Use the first active API key
-        const activeKey = res.data.find((key: any) => key.active);
+        const activeKey = res.data.find((key) => key.active);
         if (activeKey) {
           setApiKey(activeKey.key);
         }
@@ -125,7 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       let result;
       
       if (response.credential) {
-        // Google OAuth login
+        // Google OAuth login - corrected path
         const googleUser = JSON.parse(atob(response.credential.split('.')[1]));
         result = await axios.post(`${API_URL}/auth/google`, {
           name: googleUser.name,
@@ -134,7 +135,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           picture: googleUser.picture
         });
       } else {
-        // Regular login
+        // Regular login - corrected path
         result = await axios.post(`${API_URL}/auth/login`, {
           email: response.email,
           password: response.password

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import axios from "axios";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -15,59 +16,41 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const API_URL = 'http://localhost:5000/api';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // In a real app, we would make an API call to register the user
-      // For this demo, we'll simulate a successful registration
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Register the user first
+      const registerResult = await axios.post(`${API_URL}/auth/register`, {
+        name,
+        email,
+        password
+      });
       
-      // Simulate Google OAuth user data
-      const userData = {
-        sub: "123456789",
-        name: name,
-        email: email,
-        picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`
-      };
-      
-      login(userData);
-      toast.success("Account created successfully! Welcome aboard.");
-      navigate("/dashboard");
-    } catch (error) {
+      // If registration is successful, log them in
+      if (registerResult.data.token) {
+        // The backend already returns a token on registration
+        // Just use the login method to set the context state
+        await login({ email, password });
+        
+        toast.success("Account created successfully! Welcome aboard.");
+        navigate("/dashboard");
+      }
+    } catch (error: any) {
       console.error("Signup failed:", error);
-      toast.error("Signup failed. Please try again.");
+      toast.error(error.response?.data?.error || "Signup failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleSignup = async () => {
-    setIsLoading(true);
-    
-    try {
-      // Simulate Google OAuth signup
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simulate Google OAuth user data
-      const userData = {
-        sub: "123456789",
-        name: "Demo User",
-        email: "demo@example.com",
-        picture: "https://ui-avatars.com/api/?name=Demo+User"
-      };
-      
-      login(userData);
-      toast.success("Account created with Google! Welcome aboard.");
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Google signup failed:", error);
-      toast.error("Google signup failed. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+  const handleGoogleSignup = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    toast.info("Google signup is not fully integrated yet. Use email signup instead.");
+    // In a real implementation, this would initialize the Google OAuth flow
   };
 
   return (
