@@ -1,12 +1,14 @@
+
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Food from './models/Food.js';
 import User from './models/User.js';
+import ApiKey from './models/ApiKey.js';
 
 // Load environment variables
 dotenv.config();
 
-// Sample food data
+// Sample food data - expanded list
 const foodData = [
   {
     name: 'Apple',
@@ -118,6 +120,61 @@ const foodData = [
     sugar_g: 10.6,
     sodium_mg: 4,
     barcode: '049000042566'
+  },
+  {
+    name: 'Spinach',
+    calories: 23,
+    serving_size_g: 100,
+    fat_g: 0.4,
+    carbs_g: 3.6,
+    protein_g: 2.9,
+    fiber_g: 2.2,
+    sugar_g: 0.4,
+    sodium_mg: 79
+  },
+  {
+    name: 'Quinoa',
+    calories: 120,
+    serving_size_g: 100,
+    fat_g: 1.9,
+    carbs_g: 21.3,
+    protein_g: 4.4,
+    fiber_g: 2.8,
+    sugar_g: 0.9,
+    sodium_mg: 7
+  },
+  {
+    name: 'Almonds',
+    calories: 579,
+    serving_size_g: 100,
+    fat_g: 49.9,
+    carbs_g: 21.6,
+    protein_g: 21.2,
+    fiber_g: 12.5,
+    sugar_g: 4.4,
+    sodium_mg: 1
+  },
+  {
+    name: 'Sweet Potato',
+    calories: 86,
+    serving_size_g: 100,
+    fat_g: 0.1,
+    carbs_g: 20.1,
+    protein_g: 1.6,
+    fiber_g: 3,
+    sugar_g: 4.2,
+    sodium_mg: 55
+  },
+  {
+    name: 'Beef Steak',
+    calories: 271,
+    serving_size_g: 100,
+    fat_g: 19,
+    carbs_g: 0,
+    protein_g: 26,
+    fiber_g: 0,
+    sugar_g: 0,
+    sodium_mg: 66
   }
 ];
 
@@ -148,10 +205,27 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/nutrivers
       
       if (!existingAdmin) {
         // Create admin user
-        await User.create(adminUser);
+        const admin = await User.create(adminUser);
         console.log('Admin user created');
+        
+        // Create default API key for admin
+        await ApiKey.create({
+          user: admin._id,
+          name: 'Default Admin API Key'
+        });
+        console.log('Default API key created for admin');
       } else {
         console.log('Admin user already exists');
+        
+        // Check if admin has API key
+        const existingKey = await ApiKey.findOne({ user: existingAdmin._id });
+        if (!existingKey) {
+          await ApiKey.create({
+            user: existingAdmin._id,
+            name: 'Default Admin API Key'
+          });
+          console.log('Default API key created for existing admin');
+        }
       }
       
       console.log('Database seeded successfully');

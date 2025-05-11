@@ -1,10 +1,14 @@
+
 import ApiKey from '../models/ApiKey.js';
 import User from '../models/User.js';
 import Subscription from '../models/Subscription.js';
 import ApiLog from '../models/ApiLog.js';
 
 export default async (req, res, next) => {
-  const apiKey = req.headers.authorization ? req.headers.authorization.replace('Bearer ', '') : null;
+  // Check for API key in headers
+  const apiKey = req.headers.authorization 
+    ? req.headers.authorization.replace('Bearer ', '') 
+    : req.query.apiKey || null; // Also check for API key in query parameter
   
   if (!apiKey) {
     return res.status(401).json({ error: 'API key is required' });
