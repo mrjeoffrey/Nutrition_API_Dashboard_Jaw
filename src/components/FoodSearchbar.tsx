@@ -81,7 +81,7 @@ const FoodSearchbar = ({ onFoodSelect }: FoodSearchbarProps) => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search for a food (e.g., apple)"
-          className="rounded-r-none"
+          className="rounded-r-none text-gray-700"
         />
         <Button 
           type="submit" 
