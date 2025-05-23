@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -37,7 +36,7 @@ const FoodSearchbar = ({ onFoodSelect }: FoodSearchbarProps) => {
   // Search mutation with React Query
   const searchMutation = useMutation({
     mutationFn: async (searchTerm: string) => {
-      const response = await axios.get(`http://localhost:5000/v1_1/search/${encodeURIComponent(searchTerm)}`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/v1_1/search/${encodeURIComponent(searchTerm)}`, {
         headers: {
           Authorization: `Bearer ${apiKey}`
         }

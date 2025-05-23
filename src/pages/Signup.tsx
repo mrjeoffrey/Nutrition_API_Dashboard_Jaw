@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,7 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from 'sonner';
 import axios from 'axios';
@@ -33,7 +32,7 @@ interface AuthContextType {
 }
 
 // Define base API URL - use the correct path
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL + '/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

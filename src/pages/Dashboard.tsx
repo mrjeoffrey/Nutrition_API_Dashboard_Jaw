@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -30,7 +29,7 @@ const Dashboard = () => {
   const { data: apiLogs = [], isLoading: isLogsLoading } = useQuery({
     queryKey: ['apiLogs'],
     queryFn: async () => {
-      const response = await axios.get('http://localhost:5000/api/keys/logs', {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/keys/logs`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -45,7 +44,7 @@ const Dashboard = () => {
   const { data: apiUsageData = [], isLoading: isUsageLoading } = useQuery({
     queryKey: ['apiUsage'],
     queryFn: async () => {
-      const response = await axios.get('http://localhost:5000/api/keys/usage', {
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/keys/usage`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

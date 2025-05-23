@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,7 @@ const ApiKeyCard = () => {
   const apiKeyMutation = useMutation({
     mutationFn: async () => {
       const response = await axios.post(
-        'http://localhost:5000/api/keys', 
+        `${import.meta.env.VITE_API_BASE_URL}/api/keys`, 
         { name: 'Default API Key' },
         { headers: { Authorization: `Bearer ${token}` } }
       );

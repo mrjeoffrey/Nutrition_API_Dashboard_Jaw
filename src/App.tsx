@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,8 +29,10 @@ const queryClient = new QueryClient({
 
 // Set up axios with the authorization header and base URL
 const setupAxios = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
   // Set base URL for API requests
-  axios.defaults.baseURL = 'http://localhost:5000';
+  axios.defaults.baseURL = API_BASE_URL;
   
   const token = localStorage.getItem('token');
   if (token) {

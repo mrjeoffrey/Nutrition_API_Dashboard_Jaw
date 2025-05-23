@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -16,7 +15,7 @@ const SubscriptionCard = () => {
   const portalMutation = useMutation({
     mutationFn: async () => {
       const response = await axios.post(
-        'http://localhost:5000/api/subscriptions/create-portal-session', 
+        `${import.meta.env.VITE_API_BASE_URL}/api/subscriptions/create-portal-session`, 
         {}, 
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,8 +23,8 @@ const ApiUsageChart = ({ data: initialData, adminView = false }: ApiUsageChartPr
       if (!token || initialData) return initialData;
       
       const endpoint = adminView 
-        ? 'http://localhost:5000/api/admin/api-usage?days=7' 
-        : 'http://localhost:5000/api/keys/usage';
+        ? `${import.meta.env.VITE_API_BASE_URL}/api/admin/api-usage?days=7` 
+        : `${import.meta.env.VITE_API_BASE_URL}/api/keys/usage`;
         
       const response = await axios.get(endpoint, {
         headers: { Authorization: `Bearer ${token}` }
