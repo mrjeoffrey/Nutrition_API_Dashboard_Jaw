@@ -29,7 +29,7 @@ const queryClient = new QueryClient({
 
 // Set up axios with the authorization header and base URL
 const setupAxios = () => {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   // Set base URL for API requests
   axios.defaults.baseURL = API_BASE_URL;

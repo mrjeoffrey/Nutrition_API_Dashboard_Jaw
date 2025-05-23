@@ -18,8 +18,8 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
     proxy: {
-      '/api': 'http://localhost:5005',
-      '/v1_1': 'http://localhost:5005'
+      '/api': 'https://nut-api.catacomb.fyi',
+      '/v1_1': 'https://nut-api.catacomb.fyi'
     }
   }
 }))
